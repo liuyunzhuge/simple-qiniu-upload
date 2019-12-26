@@ -17,10 +17,8 @@ const zone = {
     na0: qiniu.zone.Zone_na0,
 }
 
-function loadEnv({ envPath } = {}) {
-    if (!envPath) {
-        envPath = path.resolve(process.cwd(), '.qiniu');
-    }
+function loadEnv({  envFile = '.qiniu' } = {}) {
+    let envPath = path.resolve(process.cwd(), envFile)
 
     const result = dotEnv.config({
         path: envPath
@@ -33,13 +31,14 @@ function loadEnv({ envPath } = {}) {
     return result.parsed
 }
 
-const DEBUG = false
+const DEBUG = true
 
 const DEFAULTS = {
     debug: DEBUG ? process.env.NODE_ENV !== 'production' : false,
     ACCESS_KEY: '', // set in .qiniu file
     SECRET_KEY: '', // set in .qiniu file
     cwd: process.cwd(),
+    envFile: '',
     base: path.resolve(process.cwd(), 'dist'),
     output: path.resolve(process.cwd(), 'qiniu-upload.json'),
     glob: 'dist/**',
@@ -54,7 +53,7 @@ const DEFAULTS = {
 
 class Uploader {
     constructor(config = {}) {
-        this._config = { ...DEFAULTS, ...config, ...(loadEnv()) }
+        this._config = { ...DEFAULTS, ...config, ...(loadEnv(config.envFile)) }
         this._config.base = this._config.base.replace(/\\/g, '/') + '/'
 
         this._mac = new qiniu.auth.digest.Mac(this.config.ACCESS_KEY, this.config.SECRET_KEY)

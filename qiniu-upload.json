@@ -2,13 +2,13 @@
 	"success": [],
 	"fail": [
 		{
-			"file": "D:/code/simple-qiniu-upload/dist/static/js/app.ca292bf6.js.map",
-			"key": "static/js/app.ca292bf6.js.map",
+			"file": "D:/code/simple-qiniu-upload/dist/static/js/chunk-0f565b16.6d85e06e.js",
+			"key": "static/js/chunk-0f565b16.6d85e06e.js",
 			"msg": "bad token"
 		},
 		{
-			"file": "D:/code/simple-qiniu-upload/dist/static/js/chunk-0f565b16.6d85e06e.js",
-			"key": "static/js/chunk-0f565b16.6d85e06e.js",
+			"file": "D:/code/simple-qiniu-upload/dist/static/js/app.ca292bf6.js.map",
+			"key": "static/js/app.ca292bf6.js.map",
 			"msg": "bad token"
 		},
 		{
