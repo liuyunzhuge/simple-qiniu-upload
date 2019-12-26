@@ -39,7 +39,7 @@ const DEFAULTS = {
     SECRET_KEY: '', // set in .qiniu file
     cwd: process.cwd(),
     envFile: '',
-    base: path.resolve(process.cwd(), 'dist'),
+    base: 'dist',
     output: path.resolve(process.cwd(), 'qiniu-upload.json'),
     glob: 'dist/**',
     globIgnore: [
@@ -54,7 +54,7 @@ const DEFAULTS = {
 class Uploader {
     constructor(config = {}) {
         this._config = { ...DEFAULTS, ...config, ...(loadEnv(config.envFile)) }
-        this._config.base = this._config.base.replace(/\\/g, '/') + '/'
+        this._config.base = path.resolve(this._config.cwd, this._config.base).replace(/\\/g, '/') + '/'
 
         this._mac = new qiniu.auth.digest.Mac(this.config.ACCESS_KEY, this.config.SECRET_KEY)
     }
