@@ -1,30 +1,30 @@
 {
-	"success": [
-		{
-			"file": "D:/code/simple-qiniu-upload/dist/static/js/chunk-0f565b16.6d85e06e.js",
-			"key": "static/js/chunk-0f565b16.6d85e06e.js",
-			"skipped": false
-		},
+	"success": [],
+	"fail": [
 		{
 			"file": "D:/code/simple-qiniu-upload/dist/static/js/app.ca292bf6.js.map",
 			"key": "static/js/app.ca292bf6.js.map",
-			"skipped": false
+			"msg": "bad token"
+		},
+		{
+			"file": "D:/code/simple-qiniu-upload/dist/static/js/chunk-0f565b16.6d85e06e.js",
+			"key": "static/js/chunk-0f565b16.6d85e06e.js",
+			"msg": "bad token"
 		},
 		{
 			"file": "D:/code/simple-qiniu-upload/dist/static/js/app.ca292bf6.js",
 			"key": "static/js/app.ca292bf6.js",
-			"skipped": false
+			"msg": "bad token"
 		},
 		{
 			"file": "D:/code/simple-qiniu-upload/dist/static/js/app-legacy.e1f5c82f.js.map",
 			"key": "static/js/app-legacy.e1f5c82f.js.map",
-			"skipped": false
+			"msg": "bad token"
 		},
 		{
 			"file": "D:/code/simple-qiniu-upload/dist/static/js/app-legacy.e1f5c82f.js",
 			"key": "static/js/app-legacy.e1f5c82f.js",
-			"skipped": false
+			"msg": "bad token"
 		}
-	],
-	"fail": []
+	]
 }
