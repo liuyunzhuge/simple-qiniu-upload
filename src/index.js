@@ -17,9 +17,7 @@ const zone = {
     na0: qiniu.zone.Zone_na0,
 }
 
-function loadEnv({  envFile = '.qiniu' } = {}) {
-    let envPath = path.resolve(process.cwd(), envFile)
-
+function loadEnv(envPath) {
     const result = dotEnv.config({
         path: envPath
     })
@@ -38,9 +36,9 @@ const DEFAULTS = {
     ACCESS_KEY: '', // set in .qiniu file
     SECRET_KEY: '', // set in .qiniu file
     cwd: process.cwd(),
-    envFile: '',
+    envFile: '.qiniu',
     base: 'dist',
-    output: path.resolve(process.cwd(), 'qiniu-upload.json'),
+    output: 'qiniu-upload.json',
     glob: 'dist/**',
     globIgnore: [
         'dist/!(static)/**'
@@ -53,7 +51,9 @@ const DEFAULTS = {
 
 class Uploader {
     constructor(config = {}) {
-        this._config = { ...DEFAULTS, ...config, ...(loadEnv(config.envFile)) }
+        this._config = { ...DEFAULTS, ...config }
+        let env = loadEnv(path.resolve(this._config.cwd, this._config.envFile))
+        this._config = { ...this._config, ...env }
         this._config.base = path.resolve(this._config.cwd, this._config.base).replace(/\\/g, '/') + '/'
 
         this._mac = new qiniu.auth.digest.Mac(this.config.ACCESS_KEY, this.config.SECRET_KEY)
@@ -129,7 +129,7 @@ class Uploader {
         }
         let end = () => {
             this.config.output &&
-                fs.writeFile(this.config.output, JSON.stringify(results, null, '\t'), function (err) {
+                fs.writeFile(path.resolve(this.config.cwd, this.config.output), JSON.stringify(results, null, '\t'), function (err) {
                     if (err) {
                         this.log(errorStyle(`error occured when save upload results. ${err.stack}`))
                     }
