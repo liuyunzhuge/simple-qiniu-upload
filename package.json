@@ -1,4 +1,21 @@
 {
+  "name": "simple-qiniu-upload",
+  "version": "0.1.0",
+  "description": "A simple library that helps to upload static resource file to qiniu bucket for cdn use. ",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuyunzhuge/simple-qiniu-upload"
+  },
+  "keywords": [
+    "simple-qiniu-upload"
+  ],
+  "author": "liuyunzhuge",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liuyunzhuge/simple-qiniu-upload/issues"
+  },
+  "homepage": "https://github.com/liuyunzhuge/simple-qiniu-upload#readme",
   "dependencies": {
     "chalk": "^3.0.0",
     "dotenv": "^8.2.0",
