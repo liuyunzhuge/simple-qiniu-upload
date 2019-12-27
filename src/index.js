@@ -254,6 +254,8 @@ class Uploader {
     }
 }
 
+Uploader.defaults = DEFAULTS
+
 Uploader.zone = zone
 
 module.exports = Uploader
