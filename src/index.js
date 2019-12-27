@@ -52,9 +52,15 @@ const DEFAULTS = {
 
 class Uploader {
     constructor(config = {}) {
-        this._config = { ...DEFAULTS, ...config }
-        let env = loadEnv(path.resolve(this._config.cwd, this._config.envFile))
-        this._config = { ...this._config, ...env }
+        let cwd = config.cwd || DEFAULTS.cwd
+        let envFile = config.envFile || DEFAULTS.envFile
+
+        let env = {}
+        if(envFile) {
+            env = loadEnv(path.resolve(cwd, envFile))
+        }
+
+        this._config = { ...DEFAULTS, ...env, ...config }
 
         this._mac = new qiniu.auth.digest.Mac(this.config.accessKey, this.config.secretKey)
         this.showConfigInfo()
