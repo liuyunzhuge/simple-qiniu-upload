@@ -30,10 +30,8 @@ function loadEnv(envPath) {
     return result.parsed
 }
 
-const DEBUG = true
-
 const DEFAULTS = {
-    debug: DEBUG ? process.env.NODE_ENV !== 'production' : false,
+    debug: false,
     accessKey: '', // set in .qiniu file
     secretKey: '', // set in .qiniu file
     cwd: process.cwd(),
