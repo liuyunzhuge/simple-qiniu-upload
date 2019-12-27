@@ -34,8 +34,8 @@ const DEBUG = true
 
 const DEFAULTS = {
     debug: DEBUG ? process.env.NODE_ENV !== 'production' : false,
-    ACCESS_KEY: '', // set in .qiniu file
-    SECRET_KEY: '', // set in .qiniu file
+    accessKey: '', // set in .qiniu file
+    secretKey: '', // set in .qiniu file
     cwd: process.cwd(),
     envFile: '.qiniu',
     base: 'dist',
@@ -56,7 +56,7 @@ class Uploader {
         let env = loadEnv(path.resolve(this._config.cwd, this._config.envFile))
         this._config = { ...this._config, ...env }
 
-        this._mac = new qiniu.auth.digest.Mac(this.config.ACCESS_KEY, this.config.SECRET_KEY)
+        this._mac = new qiniu.auth.digest.Mac(this.config.accessKey, this.config.secretKey)
         this.showConfigInfo()
     }
 
