@@ -1,4 +1,6 @@
 const Uploader = require('./src/index')
 
-new Uploader().start()
+new Uploader({
+    debug: false
+}).start()
 

@@ -9,6 +9,7 @@ const singleLineLog = require('single-line-log').stdout
 const errorStyle = chalk.red
 const successStyle = chalk.green
 const infoStyle = chalk.blue
+const LOGGER = 'simple-qiniu-upload'
 
 const zone = {
     z0: qiniu.zone.Zone_z0,
@@ -44,7 +45,7 @@ const DEFAULTS = {
         'dist/!(static)/**'
     ],
     bucket: 'static',
-    overrides: true,
+    overrides: false,
     parallelCount: 2,
     zone: zone.z0
 }
@@ -54,9 +55,23 @@ class Uploader {
         this._config = { ...DEFAULTS, ...config }
         let env = loadEnv(path.resolve(this._config.cwd, this._config.envFile))
         this._config = { ...this._config, ...env }
-        this._config.base = path.resolve(this._config.cwd, this._config.base).replace(/\\/g, '/') + '/'
 
         this._mac = new qiniu.auth.digest.Mac(this.config.ACCESS_KEY, this.config.SECRET_KEY)
+        this.showConfigInfo()
+    }
+
+    showConfigInfo() {
+        this._log('log', 'config: ')
+        this._log('log', `      cwd: ${successStyle(this.config.cwd)}`)
+        this._log('log', `      envFile: ${successStyle(this.config.envFile)}`)
+        this._log('log', `      base: ${successStyle(this.config.base)}`)
+        this._log('log', `      output: ${successStyle(this.config.output)}`)
+        this._log('log', `      bucket: ${successStyle(this.config.bucket)}`)
+        this._log('log', `      overrides: ${successStyle(this.config.overrides)}`)
+    }
+
+    resolveBase() {
+        return path.resolve(this.config.cwd, this.config.base).replace(/\\/g, '/') + '/'
     }
 
     get config() {
@@ -99,18 +114,22 @@ class Uploader {
         })
     }
 
-    _log(level, ...args) {
+    _debugLog(level, ...args) {
         if (this.config.debug) {
-            console[level](chalk.blue('[simple-qiniu-upload]'), ...args)
+            this._log(level, ...args)
         }
     }
 
+    _log(level, ...args) {
+        console[level](chalk.blue(`[${LOGGER}]`), ...args)
+    }
+
     log(...args) {
-        this._log('log', ...args)
+        this._debugLog('log', ...args)
     }
 
     error(...args) {
-        this._log('error', ...args)
+        this._debugLog('error', ...args)
     }
 
 
@@ -139,7 +158,7 @@ class Uploader {
         }
         let logStats = () => {
             if (this.config.debug) return
-            singleLineLog((`[simple-qiniu-upload] total files: ${stats.total}, ${infoStyle('uploading:' + stats.uploading)}, ${
+            singleLineLog((`${infoStyle('[' + LOGGER + ']')} total files: ${stats.total}, ${infoStyle('uploading:' + stats.uploading)}, ${
                 successStyle('success:' + stats.success)
                 }, ${
                 errorStyle('fail:' + stats.fail)
@@ -191,7 +210,8 @@ class Uploader {
     _createUploadTask(file) {
         return new Promise((resolve, reject) => {
             this.log('uploading:', file)
-            let key = file.replace(this.config.base, '')
+            let base = this.resolveBase()
+            let key = file.replace(base, '')
 
             let config = new qiniu.conf.Config()
             config.zone = this.config.zone
