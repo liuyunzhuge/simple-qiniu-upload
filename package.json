@@ -1,6 +1,6 @@
 {
   "name": "simple-qiniu-upload",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A simple library that helps to upload static resource file to qiniu bucket for cdn use. ",
   "main": "src/index.js",
   "repository": {
