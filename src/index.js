@@ -51,7 +51,7 @@ const DEFAULTS = {
 class Uploader {
     constructor(config = {}) {
         let cwd = config.cwd || DEFAULTS.cwd
-        let envFile = config.envFile || DEFAULTS.envFile
+        let envFile = config.envFile === undefined ? DEFAULTS.envFile : config.envFile
 
         let env = {}
         if(envFile) {
