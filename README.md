@@ -18,6 +18,7 @@
     这个文件用来在本地定义七牛的AK和SK，最好加入到`.gitignore`，避免这样的信息传递到代码仓库。
 
 * 编写上传任务
+    
     编写一个`upload.js`：
     ```js
     const Uploader = require('./src/index')
@@ -62,7 +63,7 @@
 * secretKey
     * `{String}`
     * `default`: `''`
-    * `description`: 七牛的SK，推荐在`envFile`中配置，比较安全。但是在此处指定的SK优先级比`envFile`中的高，这样当你不想启用`envFile`的时候有用，比如把AK配置到vue的`.env`相关环境变量的文件中。
+    * `description`: 七牛的SK，推荐在`envFile`中配置，比较安全。但是在此处指定的SK优先级比`envFile`中的高，这样当你不想启用`envFile`的时候有用，比如把SK配置到vue的`.env`相关环境变量的文件中。
 
 * cwd
     * `{String}`
@@ -94,7 +95,7 @@
 * output:
     * `{String}`
     * `default`: `'qiniu-upload.json`
-    * `description`: 指定最后上传明细的导出文件。
+    * `description`: 指定上传结束后存储上传明细的导出文件。
 
 * bucket:
     * `{String}`
@@ -115,3 +116,7 @@
     * `{Number}`
     * `default`: `2`
     * `description`: 设置并行上传数。
+
+## todo
+
+* 按照前缀进行文件的批量删除
