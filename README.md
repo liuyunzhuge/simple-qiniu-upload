@@ -1,3 +1,7 @@
+[![npm](https://img.shields.io/npm/dm/simple-qiniu-upload.svg)](https://www.npmjs.com/package/simple-qiniu-upload)
+[![npm](https://img.shields.io/npm/v/simple-qiniu-upload.svg)](https://www.npmjs.com/package/simple-qiniu-upload)
+[![npm](https://img.shields.io/npm/l/simple-qiniu-upload.svg)](https://www.npmjs.com/package/simple-qiniu-upload)
+
 # simple-qiniu-upload
 一个简单的工具，把静态资源发布到七牛的CDN空间。
 
