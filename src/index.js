@@ -54,7 +54,7 @@ class Uploader {
         let envFile = config.envFile === undefined ? DEFAULTS.envFile : config.envFile
 
         let env = {}
-        if(envFile) {
+        if (envFile) {
             env = loadEnv(path.resolve(cwd, envFile))
         }
 
@@ -62,6 +62,8 @@ class Uploader {
 
         this._mac = new qiniu.auth.digest.Mac(this.config.accessKey, this.config.secretKey)
         this.showConfigInfo()
+
+        this._bucketManager = null
     }
 
     showConfigInfo() {
@@ -84,6 +86,16 @@ class Uploader {
 
     get mac() {
         return this._mac
+    }
+
+    get bucketManager() {
+        if (!this._bucketManager) {
+            let config = new qiniu.conf.Config()
+            config.zone = this.config.zone
+            this._bucketManager = new qiniu.rs.BucketManager(this._mac, config);
+        }
+
+        return this._bucketManager
     }
 
     buildUploadToken(key) {
@@ -249,6 +261,85 @@ class Uploader {
                 }
             })
         })
+    }
+
+    fetchUploadedFiles({ limit = 50, prefix, storageAs = 'qiniu-file-list.json', append = false } = {}) {
+        if (!prefix) return
+
+        let files = []
+        new Promise((resolve, reject) => {
+            let run = ({ marker = '', pageIndex = 1 } = {}) => {
+                this.log(`fetch files of page ${pageIndex}`)
+                this._fetch({ limit, prefix, marker }).then(respBody => {
+                    this.log(`             ${respBody.items.length} items founded.`)
+                    respBody.items.forEach(function (item) {
+                        files.push(item.key)
+                    })
+
+                    if (respBody.marker) {
+                        run({ marker: respBody.marker, pageIndex: pageIndex + 1 })
+                    } else {
+                        resolve()
+                    }
+                }).catch(reject)
+            }
+
+            run()
+        }).then(() => {
+            this.deleteFiles(files)
+            // fs.writeFile(path.resolve(this.config.cwd, storageAs), JSON.stringify(files, null, '\t'), function (err) {
+            //     if (err) {
+            //         this.log(errorStyle(`error occured when save file list. ${err.stack}`))
+            //     }
+            // })
+        })
+    }
+
+    _fetch({ limit, prefix, marker }) {
+        return new Promise((resolve, reject) => {
+            this.bucketManager.listPrefix(this.config.bucket, { limit, prefix, marker }, function (err, respBody, respInfo) {
+                if (err) {
+                    console.log(err)
+                    reject(err)
+                }
+                if (respInfo.statusCode == 200) {
+                    resolve(respBody)
+                } else {
+                    reject(new Error(respInfo.statusCode))
+                }
+            })
+        })
+    }
+
+    deleteFiles(files) {
+        let del = () => {
+            let operations = files.splice(0, 100).map(key => qiniu.rs.deleteOp(this.config.bucket, key))
+
+            if (operations.length === 0) return
+
+            this.bucketManager.batch(operations, function (err, respBody, respInfo) {
+                if (err) {
+                    this.error(errorStyle(err));
+                } else {
+                    // 200 is success, 298 is part success
+                    if (parseInt(respInfo.statusCode / 100) == 2) {
+                        respBody.forEach(function (item) {
+                            if (item.code == 200) {
+                                console.log(item.code + "\tsuccess");
+                            } else {
+                                console.log(item.code + "\t" + item.data.error);
+                            }
+                        });
+                    } else {
+                        console.log(respInfo.deleteusCode);
+                        console.log(respBody);
+                    }
+                }
+                del()
+            })
+        }
+
+        del()
     }
 }
 

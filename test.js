@@ -1,6 +1,6 @@
 const Uploader = require('./src/index')
 
 new Uploader({
-    debug: false
-}).start()
+    debug: true
+}).fetchUploadedFiles({limit: 50, prefix: 'static/'})
 
