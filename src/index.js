@@ -92,7 +92,7 @@ class Uploader {
         if (!this._bucketManager) {
             let config = new qiniu.conf.Config()
             config.zone = this.config.zone
-            this._bucketManager = new qiniu.rs.BucketManager(this._mac, config);
+            this._bucketManager = new qiniu.rs.BucketManager(this._mac, config)
         }
 
         return this._bucketManager
@@ -168,7 +168,7 @@ class Uploader {
                     if (err) {
                         this.log(errorStyle(`error occured when save upload results. ${err.stack}`))
                     }
-                });
+                })
 
             this.log(infoStyle('end<=============='))
         }
@@ -263,15 +263,15 @@ class Uploader {
         })
     }
 
-    fetchUploadedFiles({ limit = 50, prefix, storageAs = 'qiniu-file-list.json', append = false } = {}) {
+    fetchUploadedFiles({ pageSize = 500, prefix, storageAs = 'qiniu-prefix-fetch.json' } = {}) {
         if (!prefix) return
 
         let files = []
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             let run = ({ marker = '', pageIndex = 1 } = {}) => {
-                this.log(`fetch files of page ${pageIndex}`)
-                this._fetch({ limit, prefix, marker }).then(respBody => {
-                    this.log(`             ${respBody.items.length} items founded.`)
+                this.log(`fetching files of page ${infoStyle(pageIndex)}`)
+                this._fetch({ pageSize, prefix, marker }).then(respBody => {
+                    this.log(`             ${infoStyle(respBody.items.length)} items founded.`)
                     respBody.items.forEach(function (item) {
                         files.push(item.key)
                     })
@@ -286,20 +286,17 @@ class Uploader {
 
             run()
         }).then(() => {
-            this.deleteFiles(files)
-            // fs.writeFile(path.resolve(this.config.cwd, storageAs), JSON.stringify(files, null, '\t'), function (err) {
-            //     if (err) {
-            //         this.log(errorStyle(`error occured when save file list. ${err.stack}`))
-            //     }
-            // })
+            this.log(`prefix of [${infoStyle(prefix)}], ${infoStyle(files.length)} files fetched.`)
+            fs.writeFileSync(path.resolve(this.config.cwd, storageAs), JSON.stringify(files, null, '\t'))
+            return this
         })
     }
 
-    _fetch({ limit, prefix, marker }) {
+    _fetch({ pageSize, prefix, marker }) {
         return new Promise((resolve, reject) => {
-            this.bucketManager.listPrefix(this.config.bucket, { limit, prefix, marker }, function (err, respBody, respInfo) {
+            this.bucketManager.listPrefix(this.config.bucket, { limit: pageSize, prefix, marker }, function (err, respBody, respInfo) {
                 if (err) {
-                    console.log(err)
+                    console.error(err)
                     reject(err)
                 }
                 if (respInfo.statusCode == 200) {
@@ -311,35 +308,41 @@ class Uploader {
         })
     }
 
-    deleteFiles(files) {
-        let del = () => {
-            let operations = files.splice(0, 100).map(key => qiniu.rs.deleteOp(this.config.bucket, key))
+    batchDelFiles({ batchSize = 100, fetchFile = 'qiniu-prefix-fetch.json', storageAs = 'qiniu-batch-delete.json' } = {}) {
+        let results = []
+        let files = []
+        if (!fs.existsSync(path.resolve(this.config.cwd, fetchFile))) {
+            return this.log(errorStyle('`fetchUploadedFiles` must be executed before `batchDelFiles`'))
+        }
 
-            if (operations.length === 0) return
+        let content = fs.readFileSync(path.resolve(this.config.cwd, fetchFile), 'utf8')
+        files = JSON.parse(content)
+
+        this.log(`ready to delete ${infoStyle(files.length)} files...`)
+
+        let del = (callback) => {
+            let operations = files.splice(0, batchSize).map(key => qiniu.rs.deleteOp(this.config.bucket, key))
+
+            if (operations.length === 0) return callback()
 
             this.bucketManager.batch(operations, function (err, respBody, respInfo) {
                 if (err) {
-                    this.error(errorStyle(err));
+                    this.error(errorStyle(err))
                 } else {
-                    // 200 is success, 298 is part success
-                    if (parseInt(respInfo.statusCode / 100) == 2) {
-                        respBody.forEach(function (item) {
-                            if (item.code == 200) {
-                                console.log(item.code + "\tsuccess");
-                            } else {
-                                console.log(item.code + "\t" + item.data.error);
-                            }
-                        });
-                    } else {
-                        console.log(respInfo.deleteusCode);
-                        console.log(respBody);
-                    }
+                    results = results.concat(respBody)
                 }
-                del()
+                del(callback)
             })
         }
 
-        del()
+        del(() => {
+            this.log(`delete done.`)
+            fs.writeFile(path.resolve(this.config.cwd, storageAs), JSON.stringify(results, null, '\t'), function (err) {
+                if (err) {
+                    this.log(errorStyle(`error occured when save delted results. ${err.stack}`))
+                }
+            })
+        })
     }
 }
 

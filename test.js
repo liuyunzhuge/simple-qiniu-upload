@@ -2,5 +2,8 @@ const Uploader = require('./src/index')
 
 new Uploader({
     debug: true
-}).fetchUploadedFiles({limit: 50, prefix: 'static/'})
-
+})
+.fetchUploadedFiles({prefix: 'some/0.1.1/'})
+.then(uploader => {
+    uploader.batchDelFiles()
+})
