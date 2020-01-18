@@ -121,6 +121,38 @@
     * `default`: `2`
     * `description`: 设置并行上传数。
 
-## todo
+## 按照前缀进行文件的批量删除
+根据七牛官方的NODE SDK，要实现指定前缀的文件批量删除，还是非常容易的。这个库的使用示例如下：
+```js
+const Uploader = require('./src/index')
 
-* 按照前缀进行文件的批量删除
+new Uploader({
+    debug: true
+})
+.fetchUploadedFiles({prefix: 'some/0.1.1/'})
+.then(uploader => {
+    uploader.batchDelFiles()
+})
+```
+第一步，先构造`Uploader`。 这一步构造时，以下几个option在删除操作中仍然是需要的：
+```
+accessKey: '', // set in .qiniu file
+secretKey: '', // set in .qiniu file
+cwd: process.cwd(),
+envFile: '.qiniu',
+bucket: 'static',
+zone: zone.z0
+```
+第二步，先调用`fetchUploadedFiles`方法，抓取指定前缀的文件列表。 这个方法接收一个对象作为参数，包含以下几个属性：
+```js
+{ pageSize = 500, prefix, storageAs = 'qiniu-prefix-fetch.json' }
+```
+`pageSize`代表从七牛抓取文件时，每次抓取的数量，因为七牛提供的接口类似分页列表；`prefix`指定相关的文件的前缀；`storageAs`指定一个文件，用来存储最后获取到的所有满足前缀条件的文件列表。
+`fetchUploadedFiles`是一个异步的，所以会返回一个`Promise`实例，在`Promise`被`resolve`的时候，进行下一步操作。
+第三步，调用`batchDelFiles`进行删除。此方法内部接收一个对象作为参数，包含以下几个属性：
+```js
+{ batchSize = 100, fetchFile = 'qiniu-prefix-fetch.json', storageAs = 'qiniu-batch-delete.json' }
+```
+`batchSize`表示每次调用七牛批量删除接口请求时的删除数量，`fetchFile`表示要删除的文件列表文件，一般要与`fetchUploadedFiles`方法里的`storageAs`参数保持一致，`storageAs`指定一个文件，最终会存储所有文件的删除结果。
+
+为什么会有一个按照指定前缀的删除文件的接口？这是因为CDN资源，往往会经常构建，所以会产生大量的文件资源，如果在CDN资源地址里加上有版本号这样的标识，那么回头要清理CDN上的无用资源，就可以借助版本号和按照前缀删除文件的功能轻松实现了。
